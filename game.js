@@ -12,10 +12,8 @@ const cCanvas = document.querySelector('.cars');
 const cCtx = cCanvas.getContext('2d');
 
 const tCanvas = document.querySelector('.tyre-marks');
-// tCanvas.transferControlToOffscreen();
 const tCtx = tCanvas.getContext('2d');
 
-const track = new Track();
 const pressedKeys = {};
 let mAudio = null;
 
@@ -31,7 +29,7 @@ window.onkeydown = (e) => {
   pressedKeys[e.keyCode] = true;
 };
 
-const points = tracks[Math.round(Math.random(tracks.length))];
+const trackData = tracks[Math.round(Math.random(tracks.length))];
 
 function getBounds(points) {
   const tmp = [...points];
@@ -48,26 +46,43 @@ function getBounds(points) {
 
 let xOffset = 0;
 let yOffset = 0;
+let track;
 
 function setup() {
   cCanvas.width = window.innerWidth;
   cCanvas.height = window.innerHeight;
   tCanvas.width = window.innerWidth;
   tCanvas.height = window.innerHeight;
+  
+  const bounds = getBounds(trackData.points)  
+  track = new Track(trackData);
+  track.points = centerPoints(trackData.points, bounds);
+  
   tCtx.globalAlpha = 1;
-  const bounds = getBounds(points)  
-  const cPoints = centerPoints(points, bounds);
-  track.render(tCtx, cPoints);
-  tCtx.fillStyle = 'black';
+  track.render(tCtx);
+  
+  tCtx.fillStyle = 'black';  
   tCtx.globalAlpha = 0.01;  
   tCtx.scale(scale, scale);
   cCtx.scale(scale, scale);  
 }
-
 setup();
-const car = new Car(points[0].x - 70, points[0].y + 20, -Math.PI / 2, 0.8, 15, 30, 4, scale);
-const aiCar = new Car(points[0].x - 70, points[0].y - 20, -Math.PI / 2, 0.4, 15, 30, 4, scale);
-const ai = new AI([], points);
+
+const p = track.getStartPosition(0, trackData.points);
+const car = new Car(p.x - 20, p.y + 8, -Math.PI / 2, 0.8, 15, 30, 4, scale);
+
+const aiCars = [];//getAICars();
+const ai = new AI(aiCars, trackData.points);
+
+function getAICars() {
+  const cars = [];
+  for(let i = 1; i < track.boxCount; i++) {
+    const p = track.getStartPosition(i, trackData.points);
+    const aiCar = new Car(p.x - 20, p.y + 8, -Math.PI / 2, 0.4, 15, 30, 4, scale);
+    cars.push(aiCar);
+  }
+  return cars;
+}
 
 function centerPoints(points, bounds) {
   const pWidth = bounds[1].x - bounds[0].x;
@@ -87,8 +102,7 @@ const infoEl = document.querySelector('.info');
 function renderPoint(ctx, p, size, color) {
   ctx.beginPath();
   ctx.strokeStyle = color;
-  ctx.arc(points[p].x  / scale, points[p].y / scale, size / scale, 0, 2 * Math.PI);
-  // ctx.arc(400 / scale, 100  / scale, 10, 0, 2 * Math.PI);
+  ctx.arc(p.x  / scale, p.y / scale, size / scale, 0, 2 * Math.PI);
   ctx.stroke();
 }
 
@@ -122,11 +136,11 @@ function step() {
   ai.cars.forEach(aiCar => {
     aiCar.renderTyreMarks(tCtx, {x: xOffset, y: yOffset});
     aiCar.render(cCtx, {x: xOffset, y: yOffset});
-    // renderPoint(cCtx, aiCar.nextWP, 15, 'red');
+    renderPoint(cCtx, track.points[aiCar.nextWP], 15, 'red');
   });
   
-  // points.forEach((p, i) => {
-  //   renderPoint(cCtx, i, 8, 'blue');
+  // track.points.forEach(p => {
+  //   renderPoint(cCtx, p, 8, 'blue');
   // });
   // car.debug(cCtx);
 
