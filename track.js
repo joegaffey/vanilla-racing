@@ -30,9 +30,9 @@ export default class Track {
     for (var i = 0; i < this.boxCount; i++) {
       const p = this.getStartPosition(i, points);
       ctx.fillStyle = this.whitePaintColor;
-      ctx.fillRect(p.x, p.y, 20, 30);
+      ctx.fillRect(p.x + 5, p.y, 20, 30);
       ctx.fillStyle = 'gray';
-      ctx.fillRect(p.x - 15, p.y + 5, 30, 20);
+      ctx.fillRect(p.x - 10, p.y + 5, 30, 20);
     }
   }
 

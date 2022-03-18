@@ -78,6 +78,12 @@ export default class Car {
     this.x += (this.xVelocity / fps * 60) ;
     this.y -= (this.yVelocity / fps * 60) ;
     this.angle += this.angularVelocity;
+    
+    this.angle = Math.atan2(Math.sin(this.angle), Math.cos(this.angle));
+    // if(this.angle > Math.PI * 2)
+    //   this.angle -= Math.PI * 2;
+    // if(this.angle < -Math.PI * 2)
+    //   this.angle += Math.PI * 2;
   }
 
   updatePower() {
@@ -203,25 +209,15 @@ export default class Car {
 
   debug(ctx) {
     ctx.font = "12px Arial";
-    ctx.fillText(
-      "Power: " +
-        Math.round(this.power * 100) / 100 +
-        "   Reverse: " +
-        Math.round(this.reverse * 100) / 100,
-      10,
-      20
-    );
+    ctx.fillText("Power: " + Math.round(this.power * 100) / 100 + "   Reverse: " + Math.round(this.reverse * 100) / 100, 10, 20);
     ctx.fillText("Velocity: " + Math.round(this.velocity * 100) / 100, 10, 40);
-    ctx.fillText(
-      "Angular velocity: " + Math.round(this.angularVelocity * 100) / 100,
-      10,
-      60
-    );
+    ctx.fillText("Angular velocity: " + Math.round(this.angularVelocity * 100) / 100, 10, 60);
     ctx.fillText("Can turn: " + this.canTurn, 10, 80);
     ctx.fillText("xVelocity: " + Math.round(this.xVelocity * 100), 10, 100);
     ctx.fillText("yVelocity: " + Math.round(this.yVelocity * 100), 10, 120);
-    ctx.fillText("Angle: " + Math.round((this.angle / 3.14) * 90), 10, 140);
-    ctx.fillText("x: " + Math.round(this.x), 10, 160);
-    ctx.fillText("y: " + Math.round(this.y), 10, 180);
+    ctx.fillText("Angle: " + this.angle, 10, 140);
+    ctx.fillText("Angle to WP: " + this.angleToWP, 10, 160);
+    ctx.fillText("x: " + Math.round(this.x), 10, 180);
+    ctx.fillText("y: " + Math.round(this.y), 10, 200);
   }
 }

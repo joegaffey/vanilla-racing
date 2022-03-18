@@ -1,8 +1,11 @@
 const MathUtil = {
   angleBetween: (x1, y1, x2, y2) => {
-    var dx = x2 - x1;
-    var dy = y2 - y1;
-    return  Math.atan2(dy, dx)// * 180 / Math.PI;  
+    return Math.atan2(y2 - y1, x2 - x1);
+  },  
+  distanceBetween(x1, y1, x2, y2) {
+    const a = x1 - x2;
+    const b = y1 - y2;
+    return Math.sqrt(a * a + b * b);
   }
 };
 
@@ -22,25 +25,33 @@ export default class AI {
       return;
     }
     
+      
     let wp = this.points[car.nextWP];
     
-    const angleToWP = MathUtil.angleBetween(car.x, car.y, wp.x, wp.y);
-    const angleCar = car.angle / Math.PI;
+    const distToWP = MathUtil.distanceBetween(car.x, car.y, wp.x, wp.y);
+    // console.log(distToWP)
     
-    let diff = Math.abs(angleToWP - angleCar);
+    if(distToWP < 150) {
+      car.nextWP++;
+      if(car.nextWP >= this.points.length)
+        car.nextWP = 0;
+      wp = this.points[car.nextWP];
+    }
     
+    car.angleToWP = MathUtil.angleBetween(car.x, car.y, wp.x, wp.y) - Math.PI / 2;
+    car.angleToWP = Math.atan2(Math.sin(car.angleToWP), Math.cos(car.angleToWP));
+    
+    let diff = Math.abs(car.angleToWP - (car.angle));
     // console.log(diff);
     
-    if(diff > 3.5)
-      return;
     
-    let steerNeeded = diff > 0.1;
+    let steerNeeded = diff > 0.2;
     
-    if(steerNeeded && angleToWP > angleCar) {
+    if(steerNeeded && car.angleToWP < car.angle) {
       car.steerLeft(true);
       car.steerRight(false);
     }
-    else if(steerNeeded && angleToWP < angleCar) {
+    else if(steerNeeded && car.angleToWP > car.angle) {
       car.steerLeft(false);
       car.steerRight(true);
     }
