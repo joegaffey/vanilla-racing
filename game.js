@@ -1,6 +1,11 @@
 //@TODO Add camera https://jsfiddle.net/931wk75n/2/
 //@TODO Add particles https://modernweb.com/creating-particles-html5-canvas/
 
+// var audio = document.getElementById('bgMusic');
+// audio.volume = 0.05;
+// audio.play();
+
+
 import MotorAudio from './motor-audio.js';
 import Car from './car.js';
 import Track from './track.js';
@@ -30,6 +35,7 @@ window.onkeydown = (e) => {
 };
 
 const trackData = tracks[Math.round(Math.random(tracks.length))];
+// const trackData = tracks[0];
 
 function getBounds(points) {
   const tmp = [...points];
@@ -54,7 +60,7 @@ function setup() {
   tCanvas.width = window.innerWidth;
   tCanvas.height = window.innerHeight;
   
-  const bounds = getBounds(trackData.points)  
+  const bounds = getBounds(trackData.points);
   track = new Track(trackData);
   track.points = centerPoints(trackData.points, bounds);
   
@@ -69,18 +75,24 @@ function setup() {
 setup();
 
 const p = track.getStartPosition(0, trackData.points);
-const car = new Car(p.x - 20, p.y + 8, -Math.PI / 2, 0.8, 15, 30, 4, scale);
+const car = new Car(p.x - 15, p.y + 7.5, -Math.PI / 2, 0.8, 15, 30, 4, scale);
 
-const aiCars = [];//getAICars();
+const aiCars = getAICars();
 const ai = new AI(aiCars, trackData.points);
 
 function getAICars() {
   const cars = [];
-  for(let i = 1; i < track.boxCount; i++) {
-    const p = track.getStartPosition(i, trackData.points);
-    const aiCar = new Car(p.x - 20, p.y + 8, -Math.PI / 2, 0.4, 15, 30, 4, scale);
-    cars.push(aiCar);
-  }
+  // for(let i = 1; i < track.boxCount; i++) {
+  //   const p = track.getStartPosition(i, trackData.points);
+  //   const aiCar = new Car(p.x - 20, p.y + 8, -Math.PI / 2, 0.4, 15, 30, 4, scale);
+  //   cars.push(aiCar);
+  // }
+  
+  // const i = 1;
+  // const p = track.getStartPosition(i, trackData.points);
+  // const aiCar = new Car(p.x - 15, p.y + 7.5, -Math.PI / 2, 0.4, 15, 30, 4, scale);
+  // cars.push(aiCar);
+  
   return cars;
 }
 
@@ -106,7 +118,17 @@ function renderPoint(ctx, p, size, color) {
   ctx.stroke();
 }
 
+function renderLine(ctx, a, b, color) {
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.moveTo(a.x / scale, a.y / scale);
+  ctx.lineTo(b.x / scale, b.y / scale);
+  ctx.stroke();
+}
+
 function step() {
+  const debug = aiCars.length > 0;
+  
   ai.updateCars();
   ai.cars.forEach(aiCar => {
     ai.drive(aiCar);
@@ -136,13 +158,20 @@ function step() {
   ai.cars.forEach(aiCar => {
     aiCar.renderTyreMarks(tCtx, {x: xOffset, y: yOffset});
     aiCar.render(cCtx, {x: xOffset, y: yOffset});
-    renderPoint(cCtx, track.points[aiCar.nextWP], 15, 'red');
+    if(debug) {
+      // aiCar.debug(cCtx);
+      renderPoint(cCtx, track.points[aiCar.nextWP], 15, 'red');
+      renderLine(cCtx, {x: aiCar.x + xOffset + aiCar.length, y: aiCar.y + yOffset + aiCar.width}, track.points[aiCar.nextWP], 'red');
+    }
   });
   
-  // track.points.forEach(p => {
-  //   renderPoint(cCtx, p, 8, 'blue');
-  // });
-  // car.debug(cCtx);
+  if(debug) {
+    track.points.forEach(p => {
+      renderPoint(cCtx, p, 8, 'blue');
+    });
+  }
+  
+  //car.debug(cCtx);
 
   if(mAudio) {
     if(!car.isRunning && !mAudio.isStopped)
