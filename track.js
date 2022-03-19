@@ -9,10 +9,12 @@ export default class Track {
     this.yellowPaintColor = '#cccccc';
     this.blackPaintColor = '#333333';
     this.redPaintColor = '#999999';
-    this.asphaultColor = 'gray';
+    this.asphaultColor = 'gray';    
+    this.dir = this.points[0].x > this.points[1].x ? -1 : 1;
   }
   
   getStartPosition(index, points) {
+    // const xVal = points[0].x - ((Math.floor(index / this.lanes) * 70 - 50) *  this.dir);
     const xVal = points[0].x - Math.floor(index / this.lanes) * 70 - 50;
     const yVal = points[0].y - Math.ceil(index % this.lanes) * 50 + 12;
     return {x: xVal, y: yVal};
@@ -27,11 +29,14 @@ export default class Track {
   }
   
   drawStartBoxes(ctx, points) {
+    
     for (var i = 0; i < this.boxCount; i++) {
       const p = this.getStartPosition(i, points);
       ctx.fillStyle = this.whitePaintColor;
+      // ctx.fillRect((p.x + 5) * this.dir, p.y, 20, 30);
       ctx.fillRect(p.x + 5, p.y, 20, 30);
       ctx.fillStyle = 'gray';
+      // ctx.fillRect((p.x - 10) *  this.dir, p.y + 5, 30, 20);
       ctx.fillRect(p.x - 10, p.y + 5, 30, 20);
     }
   }
@@ -97,31 +102,45 @@ export default class Track {
   }
 
   drawLoop(ctx) {
+    const points = [...this.points];
+    points.push(points[0], points[1]);
     ctx.beginPath();
-    ctx.moveTo(this.points[0].x, this.points[0].y);
-    for (var i = 0; i < this.points.length - 1; i++) {
-      ctx.arcTo(
-        this.points[i].x,
-        this.points[i].y,
-        this.points[i + 1].x,
-        this.points[i + 1].y,
-        90
-      );
+    ctx.moveTo(points[0].x, points[0].y);
+    for (var i = 0; i < points.length - 1; i++) {
+      ctx.arcTo(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y, 90);
     }
-    ctx.arcTo(
-      this.points[this.points.length - 1].x,
-      this.points[this.points.length - 1].y,
-      this.points[0].x,
-      this.points[0].y,
-      90
-    );
-    ctx.arcTo(
-      this.points[0].x,
-      this.points[0].y,
-      this.points[1].x,
-      this.points[1].y,
-      90
-    );
     ctx.stroke();
   }
+  
+  // drawLoop(ctx) {
+  //   const points = [...this.points];
+  //   points.push(this.points[0])
+  //   ctx.beginPath();
+  //   ctx.moveTo((points[0].x), points[0].y);
+  //   for(let i = 0; i < points.length - 1; i ++) {
+  //     const x_mid = (points[i].x + points[i + 1].x) / 2;
+  //     const y_mid = (points[i].y + points[i + 1].y) / 2;
+  //     const cp_x1 = (x_mid + points[i].x) / 2;
+  //     const cp_x2 = (x_mid + points[i + 1].x) / 2;
+  //     ctx.quadraticCurveTo(cp_x1, points[i].y ,x_mid, y_mid);
+  //     ctx.quadraticCurveTo(cp_x2, points[i + 1].y, points[i + 1].x, points[i + 1].y);
+  //   }
+  //   ctx.stroke();
+  // } 
+  
+//   drawLoop(ctx) {
+//     ctx.beginPath();
+//     ctx.moveTo(this.points[0].x, this.points[0].y);
+    
+//     const points = [...this.points];
+//     points.push(this.points[0]);
+//     points.push(this.points[1]);
+
+//     for (let i = 1; i < points.length - 1; i ++) {
+//       const xc = (points[i].x + points[ i + 1].x) / 2;
+//       const yc = (points[i].y + points[i + 1].y) / 2;
+//       ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+//     }
+//     ctx.stroke();
+//   }
 }

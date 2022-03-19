@@ -215,8 +215,8 @@ export default class Car {
     ctx.fillText("Can turn: " + this.canTurn, 10, 80);
     ctx.fillText("xVelocity: " + Math.round(this.xVelocity * 100), 10, 100);
     ctx.fillText("yVelocity: " + Math.round(this.yVelocity * 100), 10, 120);
-    ctx.fillText("Angle: " + this.angle, 10, 140);
-    ctx.fillText("Angle to WP: " + this.angleToWP, 10, 160);
+    ctx.fillText("Angle: " + Math.round(this.angle * 180 / Math.PI), 10, 140);
+    ctx.fillText("Angle to WP: " + Math.round(this.angleToWP * 180 / Math.PI), 10, 160);
     ctx.fillText("x: " + Math.round(this.x), 10, 180);
     ctx.fillText("y: " + Math.round(this.y), 10, 200);
   }

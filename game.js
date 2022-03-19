@@ -91,6 +91,7 @@ function getAICars() {
   // const i = 1;
   // const p = track.getStartPosition(i, trackData.points);
   // const aiCar = new Car(p.x - 15, p.y + 7.5, -Math.PI / 2, 0.4, 15, 30, 4, scale);
+  // aiCar.debugOn = true;
   // cars.push(aiCar);
   
   return cars;
@@ -159,7 +160,8 @@ function step() {
     aiCar.renderTyreMarks(tCtx, {x: xOffset, y: yOffset});
     aiCar.render(cCtx, {x: xOffset, y: yOffset});
     if(debug) {
-      // aiCar.debug(cCtx);
+      if(aiCar.debugOn)
+        aiCar.debug(cCtx);
       renderPoint(cCtx, track.points[aiCar.nextWP], 15, 'red');
       renderLine(cCtx, {x: aiCar.x + xOffset + aiCar.length, y: aiCar.y + yOffset + aiCar.width}, track.points[aiCar.nextWP], 'red');
     }

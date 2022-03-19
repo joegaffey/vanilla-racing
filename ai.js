@@ -6,6 +6,9 @@ const MathUtil = {
     const a = x1 - x2;
     const b = y1 - y2;
     return Math.sqrt(a * a + b * b);
+  },
+  normaliseAngle(angle) {
+    return Math.atan2(Math.sin(angle), Math.cos(angle));
   }
 };
 
@@ -39,7 +42,7 @@ export default class AI {
     }
     
     car.angleToWP = MathUtil.angleBetween(car.x, car.y, wp.x, wp.y) - Math.PI / 2;
-    car.angleToWP = Math.atan2(Math.sin(car.angleToWP), Math.cos(car.angleToWP));
+    car.angleToWP = MathUtil.normaliseAngle(car.angleToWP);
     
     let diff = Math.abs(car.angleToWP - (car.angle));
     // console.log(diff);
