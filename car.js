@@ -3,11 +3,11 @@ const Physics = {
   maxReverse: 0.05, //0.05;
   powerFactor: 0.0005, //0.001;
   reverseFactor: 0.01, //0.0005;
-  engineBrakingFactor: 0.0005,
-  brakingFactor: 0.005,
+  engineBrakingFactor: 0.0004,
+  brakingFactor: 0.002,
   underSteerFactor: 0.001,
   drag: 0.95,
-  angularDrag: 0.9, //0.95;
+  angularDrag: 0.92, //0.95;
   turnSpeed: 0.002, //0.002
 };
 
