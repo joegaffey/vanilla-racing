@@ -26,6 +26,7 @@ export default class Track {
     this.drawSurface(ctx, this.points);
     this.drawStartFinishLine(ctx, this.points);
     this.drawStartBoxes(ctx, this.points);
+    // this.debug(ctx);
   }
   
   drawStartBoxes(ctx, points) {
@@ -110,6 +111,13 @@ export default class Track {
       ctx.arcTo(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y, 90);
     }
     ctx.stroke();
+  }
+  
+  debug(ctx) {
+    for (var i = 0; i < this.points.length - 1; i++) {
+      ctx.fillStyle = '#000';
+      ctx.fillText(i, this.points[i].x, this.points[i].y);
+    }
   }
   
   // drawLoop(ctx) {

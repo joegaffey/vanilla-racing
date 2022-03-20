@@ -34,7 +34,7 @@ window.onkeydown = (e) => {
   pressedKeys[e.keyCode] = true;
 };
 
-const trackData = tracks[Math.round(Math.random(tracks.length))];
+const trackData = tracks[Math.floor(Math.random() * tracks.length)];
 // const trackData = tracks[0];
 
 function getBounds(points) {
