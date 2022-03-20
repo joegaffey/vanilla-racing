@@ -11,6 +11,7 @@ import Car from './car.js';
 import Track from './track.js';
 import tracks from './tracks.js';
 import AI from './ai.js';
+import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
 
 const scale = 4;
 const cCanvas = document.querySelector('.cars');
@@ -34,7 +35,25 @@ window.onkeydown = (e) => {
   pressedKeys[e.keyCode] = true;
 };
 
-const trackData = tracks[Math.floor(Math.random() * tracks.length)];
+let trackNum = null;
+if(window.location.hash) {
+  if(window.location.hash.includes('track'))
+    trackNum  = getHashParam('track');
+}
+
+function getHashParam(name) {
+  var query = window.location.hash.substring(1);
+  var vars = query.split('&');
+  for (var i = 0; i < vars.length; i++) {
+    var pair = vars[i].split('=');
+    if (decodeURIComponent(pair[0]) == name) {
+      return decodeURIComponent(pair[1]);
+    }
+  }
+  return null;
+}
+
+const trackData = tracks[trackNum || Math.floor(Math.random() * tracks.length)];
 // const trackData = tracks[0];
 
 function getBounds(points) {
@@ -76,6 +95,66 @@ setup();
 
 const p = track.getStartPosition(0, trackData.points);
 const car = new Car(p.x - 15, p.y + 7.5, -Math.PI / 2, 0.8, 15, 30, 4, scale);
+
+const onlineCars = {};
+let socket = null;
+
+const online = getHashParam('online');
+if(online) {
+  const startTime = Date.now();
+
+  socket = io('https://vanilla-racing-online.glitch.me', {
+    withCredentials: true
+  });
+  
+  socket.on('update', (msg) => {
+    const oCar = onlineCars[msg.id];
+    if(!oCar)
+      return;
+    oCar.x = msg.x;
+    oCar.y = msg.y;
+    oCar.angle = msg.angle;
+  });
+
+  socket.on('newPlayer', (msg) => {
+    if(msg.track !== trackNum || onlineCars[msg.id] || msg.id == socket.id)
+      return;
+    const p = track.getStartPosition(0, trackData.points);
+    const oCar = new Car(p.x - 15, p.y + 7.5, -Math.PI / 2, 0.8, 15, 30, 4, scale);
+    onlineCars[msg.id] = oCar;
+    // positionCarsByStartTime();
+    socket.emit('newPlayer', { startTime: startTime, track: trackNum });
+  });
+  
+  socket.on('players', (msg) => {
+    // console.log(msg)
+  });
+  
+  socket.on('playerExit', (msg) => {
+    delete onlineCars[msg];
+  });
+  
+  socket.emit('newPlayer', { startTime: startTime, track: trackNum });
+}
+
+function positionCarsByStartTime() {
+  const cars = Object.values(onlineCars);
+  cars.push(car);
+  cars.sort((a, b) => a.startTime > b.startTime);
+  cars.forEach((oCar, i) => {
+    const p = track.getStartPosition(i, trackData.points);
+    if(onlineCars[oCar.id]) {
+      onlineCars[oCar.id].x = p.x - 15;
+      onlineCars[oCar.id].y = p.y + 7.5;
+      onlineCars[oCar.id].angle = -Math.PI / 2;
+    }
+    else {
+      car.x = p.x - 15;
+      car.y = p.y + 7.5;
+      car.angle = -Math.PI / 2;
+    }
+  })
+}
 
 const aiCars = getAICars();
 const ai = new AI(aiCars, trackData.points);
@@ -128,6 +207,11 @@ function renderLine(ctx, a, b, color) {
 }
 
 function step() {
+  
+  if(online) {
+    socket.emit('update', { id: socket.id, x: car.x, y: car.y, angle: car.angle });
+  }
+  
   const debug = aiCars.length > 0;
   
   ai.updateCars();
@@ -167,9 +251,15 @@ function step() {
     }
   });
   
+  Object.values(onlineCars).forEach(oCar => {
+    oCar.renderTyreMarks(tCtx, {x: xOffset, y: yOffset});
+    oCar.render(cCtx, {x: xOffset, y: yOffset});
+  });
+  
+  
   if(debug) {
     track.points.forEach(p => {
-      renderPoint(cCtx, p, 8, 'blue');
+      renderPoint(cCtx, p, 8, 'blue'); 
     });
   }
   
