@@ -103,7 +103,7 @@ const online = getHashParam('online');
 if(online) {
   const startTime = Date.now();
 
-  socket = io('https://vanilla-racing-online.glitch.me', {
+  socket = io('https://vanilla-racing-online-dev.glitch.me', {
     withCredentials: true
   });
   
@@ -115,19 +115,31 @@ if(online) {
     oCar.y = msg.y;
     oCar.angle = msg.angle;
   });
-
-  socket.on('newPlayer', (msg) => {
-    if(msg.track !== trackNum || onlineCars[msg.id] || msg.id == socket.id)
-      return;
-    const p = track.getStartPosition(0, trackData.points);
-    const oCar = new Car(p.x - 15, p.y + 7.5, -Math.PI / 2, 0.8, 15, 30, 4, scale);
-    onlineCars[msg.id] = oCar;
-    // positionCarsByStartTime();
-    socket.emit('newPlayer', { startTime: startTime, track: trackNum });
-  });
-  
+ 
   socket.on('players', (msg) => {
     // console.log(msg)
+    Object.keys(msg).forEach(key => {
+      const player = msg[key];
+      if(player.track === trackNum) {
+        if(player.id === socket.id) {
+          const p = track.getStartPosition(player.gridPosition, trackData.points);
+          car.x = p.x - 15;
+          car.y = p.y + 7.5;
+          car.angle = -Math.PI / 2;
+        }
+        else if(onlineCars[player.id]) {
+          const p = track.getStartPosition(player.gridPosition, trackData.points);
+          onlineCars[player.id].x = p.x - 15;
+          onlineCars[player.id].y = p.y + 7.5;
+          onlineCars[player.id].angle = -Math.PI / 2;
+        }
+        else {
+          const p = track.getStartPosition(player.gridPosition, trackData.points);
+          const oCar = new Car(p.x - 15, p.y + 7.5, -Math.PI / 2, 0.8, 15, 30, 4, scale);
+          onlineCars[player.id] = oCar;
+        }
+      }
+    });
   });
   
   socket.on('playerExit', (msg) => {
@@ -206,10 +218,9 @@ function renderLine(ctx, a, b, color) {
   ctx.stroke();
 }
 
-function step() {
-  
+function step() {  
   if(online) {
-    socket.emit('update', { id: socket.id, x: car.x, y: car.y, angle: car.angle });
+    socket.emit('update', { id: socket.id, track: trackNum, x: car.x, y: car.y, angle: car.angle });
   }
   
   const debug = aiCars.length > 0;
